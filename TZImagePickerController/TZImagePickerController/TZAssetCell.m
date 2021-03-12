@@ -12,6 +12,9 @@
 #import "TZImageManager.h"
 #import "TZImagePickerController.h"
 #import "TZProgressView.h"
+#import <Masonry/Masonry.h>
+
+#define SUITFRAME(x) x/(812/[UIScreen mainScreen].bounds.size.height)
 
 @interface TZAssetCell ()
 @property (weak, nonatomic) UIImageView *imageView;       // The photo / 照片
@@ -112,8 +115,8 @@
     if (type == TZAssetCellTypeVideo) {
         self.bottomView.hidden = NO;
         self.timeLength.text = _model.timeLength;
-        self.videoImgView.hidden = NO;
-        _timeLength.tz_left = self.videoImgView.tz_right;
+        self.videoImgView.hidden = YES;
+        self.timeLength.hidden = NO;
         _timeLength.textAlignment = NSTextAlignmentRight;
     } else if (type == TZAssetCellTypePhotoGif && self.allowPickingGif) {
         self.bottomView.hidden = NO;
@@ -285,9 +288,8 @@
 - (UIView *)bottomView {
     if (_bottomView == nil) {
         UIView *bottomView = [[UIView alloc] init];
-        static NSInteger rgb = 0;
         bottomView.userInteractionEnabled = NO;
-        bottomView.backgroundColor = [UIColor colorWithRed:rgb green:rgb blue:rgb alpha:0.8];
+        bottomView.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.2];
         [self.contentView addSubview:bottomView];
         _bottomView = bottomView;
     }
@@ -306,6 +308,7 @@
 - (UIImageView *)videoImgView {
     if (_videoImgView == nil) {
         UIImageView *videoImgView = [[UIImageView alloc] init];
+        videoImgView.hidden = YES;
         [videoImgView setImage:[UIImage tz_imageNamedFromMyBundle:@"VideoSendIcon"]];
         [self.bottomView addSubview:videoImgView];
         _videoImgView = videoImgView;
@@ -316,7 +319,7 @@
 - (UILabel *)timeLength {
     if (_timeLength == nil) {
         UILabel *timeLength = [[UILabel alloc] init];
-        timeLength.font = [UIFont boldSystemFontOfSize:11];
+        timeLength.font = [UIFont systemFontOfSize:12];
         timeLength.textColor = [UIColor whiteColor];
         timeLength.textAlignment = NSTextAlignmentRight;
         [self.bottomView addSubview:timeLength];
@@ -362,15 +365,15 @@
         _selectImageView.contentMode = UIViewContentModeScaleAspectFit;
     }
     _indexLabel.frame = _selectImageView.frame;
-    _imageView.frame = self.bounds;
+    _imageView.frame = CGRectMake(0, 0, self.tz_width, self.tz_height);
 
     static CGFloat progressWH = 20;
     CGFloat progressXY = (self.tz_width - progressWH) / 2;
     _progressView.frame = CGRectMake(progressXY, progressXY, progressWH, progressWH);
 
     _bottomView.frame = CGRectMake(0, self.tz_height - 17, self.tz_width, 17);
-    _videoImgView.frame = CGRectMake(8, 0, 17, 17);
-    _timeLength.frame = CGRectMake(self.videoImgView.tz_right, 0, self.tz_width - self.videoImgView.tz_right - 5, 17);
+    _videoImgView.frame = CGRectMake(self.tz_height - 20 - 4, -1, 20, 20);
+    _timeLength.frame = CGRectMake(0, 0, self.tz_width - 4, 17);
     
     self.type = (NSInteger)self.model.type;
     self.showSelectBtn = self.showSelectBtn;
@@ -395,6 +398,7 @@
 @interface TZAlbumCell ()
 @property (weak, nonatomic) UIImageView *posterImageView;
 @property (weak, nonatomic) UILabel *titleLabel;
+@property (weak, nonatomic) UILabel *countLabel;
 @end
 
 @implementation TZAlbumCell
@@ -402,21 +406,16 @@
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
     self.backgroundColor = [UIColor whiteColor];
-    self.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    self.accessoryType = UITableViewCellAccessoryNone;
+    
     return self;
 }
 
 - (void)setModel:(TZAlbumModel *)model {
     _model = model;
     
-    UIColor *nameColor = UIColor.blackColor;
-    if (@available(iOS 13.0, *)) {
-        nameColor = UIColor.labelColor;
-    }
-    NSMutableAttributedString *nameString = [[NSMutableAttributedString alloc] initWithString:model.name attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:16],NSForegroundColorAttributeName:nameColor}];
-    NSAttributedString *countString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"  (%zd)",model.count] attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:16],NSForegroundColorAttributeName:[UIColor lightGrayColor]}];
-    [nameString appendAttributedString:countString];
-    self.titleLabel.attributedText = nameString;
+    self.titleLabel.text = model.name;
+    self.countLabel.text = [NSString stringWithFormat:@"%d", model.count];
     [[TZImageManager manager] getPostImageWithAlbumModel:model completion:^(UIImage *postImage) {
         self.posterImageView.image = postImage;
         [self setNeedsLayout];
@@ -436,10 +435,10 @@
 - (void)layoutSubviews {
     [super layoutSubviews];
     _selectedCountButton.frame = CGRectMake(self.contentView.tz_width - 24, 23, 24, 24);
-    NSInteger titleHeight = ceil(self.titleLabel.font.lineHeight);
-    self.titleLabel.frame = CGRectMake(80, (self.tz_height - titleHeight) / 2, self.tz_width - 80 - 50, titleHeight);
-    self.posterImageView.frame = CGRectMake(0, 0, 70, 70);
-    
+    self.titleLabel.frame = CGRectMake(16 + SUITFRAME(60) + 16, 10 + 9, self.tz_width - 16 - SUITFRAME(60) - 16, 21);
+    self.posterImageView.frame = CGRectMake(16, 10, SUITFRAME(60), SUITFRAME(60));
+    self.countLabel.frame = CGRectMake(16 + SUITFRAME(60) + 16, 10 + 9 + 21 + 4, self.tz_width - 16 - SUITFRAME(60) - 16, 18);
+
     if (self.albumCellDidLayoutSubviewsBlock) {
         self.albumCellDidLayoutSubviewsBlock(self, _posterImageView, _titleLabel);
     }
@@ -465,17 +464,27 @@
 - (UILabel *)titleLabel {
     if (_titleLabel == nil) {
         UILabel *titleLabel = [[UILabel alloc] init];
-        titleLabel.font = [UIFont boldSystemFontOfSize:17];
-        if (@available(iOS 13.0, *)) {
-            titleLabel.textColor = UIColor.labelColor;
-        } else {
-            titleLabel.textColor = [UIColor blackColor];
-        }
+        titleLabel.font = [UIFont systemFontOfSize:15];
+        CGFloat rgb = 43/255.0f;
+        titleLabel.textColor = [UIColor colorWithRed:rgb green:rgb blue:rgb alpha:1];
         titleLabel.textAlignment = NSTextAlignmentLeft;
         [self.contentView addSubview:titleLabel];
         _titleLabel = titleLabel;
     }
     return _titleLabel;
+}
+
+- (UILabel *)countLabel {
+    if (_countLabel == nil) {
+        UILabel *countLabel = [[UILabel alloc] init];
+        countLabel.font = [UIFont systemFontOfSize:13];
+        CGFloat rgb = 157/255.0f;
+        countLabel.textColor = [UIColor colorWithRed:rgb green:rgb blue:rgb alpha:1];
+        countLabel.textAlignment = NSTextAlignmentLeft;
+        [self.contentView addSubview:countLabel];
+        _countLabel = countLabel;
+    }
+    return _countLabel;
 }
 
 - (UIButton *)selectedCountButton {

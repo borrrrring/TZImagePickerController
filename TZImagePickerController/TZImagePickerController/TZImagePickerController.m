@@ -15,6 +15,8 @@
 #import "UIView+TZLayout.h"
 #import "TZImageManager.h"
 
+#define SUITFRAME(x) x/(812/[UIScreen mainScreen].bounds.size.height)
+
 @interface TZImagePickerController () {
     NSTimer *_timer;
     UILabel *_tipLabel;
@@ -420,6 +422,7 @@
 }
 
 - (void)showProgressHUD {
+    return;
     if (!_progressHUD) {
         _progressHUD = [UIButton buttonWithType:UIButtonTypeCustom];
         [_progressHUD setBackgroundColor:[UIColor clearColor]];
@@ -466,6 +469,7 @@
 }
 
 - (void)hideProgressHUD {
+    return;
     if (_progressHUD) {
         [_HUDIndicatorView stopAnimating];
         [_progressHUD removeFromSuperview];
@@ -711,10 +715,7 @@
 @end
 
 
-@interface TZAlbumPickerController ()<UITableViewDataSource, UITableViewDelegate, PHPhotoLibraryChangeObserver> {
-    UITableView *_tableView;
-}
-@property (nonatomic, strong) NSMutableArray *albumArr;
+@interface TZAlbumPickerController ()<UITableViewDataSource, UITableViewDelegate, PHPhotoLibraryChangeObserver> 
 @end
 
 @implementation TZAlbumPickerController
@@ -732,7 +733,7 @@
     TZImagePickerController *imagePickerVc = (TZImagePickerController *)self.navigationController;
     UIBarButtonItem *cancelItem = [[UIBarButtonItem alloc] initWithTitle:imagePickerVc.cancelBtnTitleStr style:UIBarButtonItemStylePlain target:imagePickerVc action:@selector(cancelButtonClick)];
     [TZCommonTools configBarButtonItem:cancelItem tzImagePickerVc:imagePickerVc];
-    self.navigationItem.rightBarButtonItem = cancelItem;
+    self.navigationItem.leftBarButtonItem = cancelItem;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -765,8 +766,8 @@
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         [[TZImageManager manager] getAllAlbumsWithFetchAssets:!self.isFirstAppear completion:^(NSArray<TZAlbumModel *> *models) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                self->_albumArr = [NSMutableArray arrayWithArray:models];
-                for (TZAlbumModel *albumModel in self->_albumArr) {
+                self.albumArr = [NSMutableArray arrayWithArray:models];
+                for (TZAlbumModel *albumModel in self.albumArr) {
                     albumModel.selectedModels = imagePickerVc.selectedModels;
                 }
                 [imagePickerVc hideProgressHUD];
@@ -776,24 +777,20 @@
                     [self configTableView];
                 }
                 
-                if (!self->_tableView) {
-                    self->_tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
-                    self->_tableView.rowHeight = 70;
-                    if (@available(iOS 13.0, *)) {
-                        self->_tableView.backgroundColor = [UIColor tertiarySystemBackgroundColor];
-                    } else {
-                        self->_tableView.backgroundColor = [UIColor whiteColor];
-                    }
-                    self->_tableView.tableFooterView = [[UIView alloc] init];
-                    self->_tableView.dataSource = self;
-                    self->_tableView.delegate = self;
-                    [self->_tableView registerClass:[TZAlbumCell class] forCellReuseIdentifier:@"TZAlbumCell"];
-                    [self.view addSubview:self->_tableView];
+                if (!self.tableView) {
+                    self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
+                    self.tableView.rowHeight = SUITFRAME(60)+20;
+                    self.tableView.backgroundColor = [UIColor whiteColor];
+                    self.tableView.tableFooterView = [[UIView alloc] init];
+                    self.tableView.dataSource = self;
+                    self.tableView.delegate = self;
+                    [self.tableView registerClass:[TZAlbumCell class] forCellReuseIdentifier:@"TZAlbumCell"];
+                    [self.view addSubview:self.tableView];
                     if (imagePickerVc.albumPickerPageUIConfigBlock) {
-                        imagePickerVc.albumPickerPageUIConfigBlock(self->_tableView);
+                        imagePickerVc.albumPickerPageUIConfigBlock(self.tableView);
                     }
                 } else {
-                    [self->_tableView reloadData];
+                    [self.tableView reloadData];
                 }
             });
         }];
@@ -861,7 +858,6 @@
     cell.albumCellDidSetModelBlock = imagePickerVc.albumCellDidSetModelBlock;
     cell.selectedCountButton.backgroundColor = imagePickerVc.iconThemeColor;
     cell.model = _albumArr[indexPath.row];
-    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     return cell;
 }
 
@@ -1006,8 +1002,10 @@
         preferredLanguage = @"zh-Hans";
     } else if ([preferredLanguage rangeOfString:@"zh-Hant"].location != NSNotFound) {
         preferredLanguage = @"zh-Hant";
-    } else if ([preferredLanguage rangeOfString:@"vi"].location != NSNotFound) {
-        preferredLanguage = @"vi";
+    } else if ([preferredLanguage rangeOfString:@"ja"].location != NSNotFound) {
+        preferredLanguage = @"ja";
+    } else if ([preferredLanguage rangeOfString:@"ko"].location != NSNotFound) {
+        preferredLanguage = @"ko";
     } else {
         preferredLanguage = @"en";
     }

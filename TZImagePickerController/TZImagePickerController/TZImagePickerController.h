@@ -244,6 +244,7 @@
 // For method annotations, see the corresponding method in TZImagePickerControllerDelegate / 方法注释见TZImagePickerControllerDelegate中对应方法
 @property (nonatomic, copy) void (^didFinishPickingPhotosHandle)(NSArray<UIImage *> *photos,NSArray *assets,BOOL isSelectOriginalPhoto);
 @property (nonatomic, copy) void (^didFinishPickingPhotosWithInfosHandle)(NSArray<UIImage *> *photos,NSArray *assets,BOOL isSelectOriginalPhoto,NSArray<NSDictionary *> *infos);
+@property (nonatomic, copy) void (^didFinishPickingPhotoWithFetchResultHandle)(PHAsset *asset, PHFetchResult<PHAsset *> *fetchResult, int currentIndex);
 @property (nonatomic, copy) void (^imagePickerControllerDidCancelHandle)(void);
 @property (nonatomic, copy) void (^didFinishPickingVideoHandle)(UIImage *coverImage,PHAsset *asset);
 @property (nonatomic, copy) void (^didFinishPickingGifImageHandle)(UIImage *animatedImage,id sourceAssets);
@@ -297,6 +298,9 @@
 
 
 @interface TZAlbumPickerController : UIViewController
+
+@property (nonatomic, strong) UITableView *tableView;
+@property (nonatomic, strong) NSMutableArray *albumArr;
 @property (nonatomic, assign) NSInteger columnNumber;
 @property (assign, nonatomic) BOOL isFirstAppear;
 - (void)configTableView;

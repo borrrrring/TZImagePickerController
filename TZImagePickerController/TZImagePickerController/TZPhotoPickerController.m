@@ -38,14 +38,13 @@
 }
 @property CGRect previousPreheatRect;
 @property (nonatomic, assign) BOOL isSelectOriginalPhoto;
-@property (nonatomic, strong) TZCollectionView *collectionView;
 @property (nonatomic, strong) UILabel *noDataLabel;
 @property (strong, nonatomic) UICollectionViewFlowLayout *layout;
 @property (nonatomic, strong) UIImagePickerController *imagePickerVc;
 @property (strong, nonatomic) CLLocation *location;
-@property (nonatomic, strong) NSOperationQueue *operationQueue;
 @property (nonatomic, assign) BOOL isSavingMedia;
 @property (nonatomic, assign) BOOL isFetchingMedia;
+@property (nonatomic, assign) int currentIndex;
 @end
 
 static CGSize AssetGridThumbnailSize;
@@ -546,6 +545,9 @@ static CGFloat itemMargin = 5;
     if (tzImagePickerVc.didFinishPickingPhotosWithInfosHandle) {
         tzImagePickerVc.didFinishPickingPhotosWithInfosHandle(photos,assets,_isSelectOriginalPhoto,infoArr);
     }
+    if (tzImagePickerVc.didFinishPickingPhotoWithFetchResultHandle) {
+        tzImagePickerVc.didFinishPickingPhotoWithFetchResultHandle(assets.firstObject, self.model.result, self.currentIndex);
+    }
 }
 
 #pragma mark - UICollectionViewDataSource && Delegate
@@ -607,6 +609,9 @@ static CGFloat itemMargin = 5;
         __strong typeof(weakCell) strongCell = weakCell;
         __strong typeof(weakSelf) strongSelf = weakSelf;
         __strong typeof(weakLayer) strongLayer = weakLayer;
+        
+        strongSelf.currentIndex = indexPath.row;
+        
         TZImagePickerController *tzImagePickerVc = (TZImagePickerController *)strongSelf.navigationController;
         // 1. cancel select / 取消选择
         if (isSelected) {

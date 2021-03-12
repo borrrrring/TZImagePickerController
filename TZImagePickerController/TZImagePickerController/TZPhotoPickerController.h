@@ -8,12 +8,15 @@
 
 #import <UIKit/UIKit.h>
 
-@class TZAlbumModel;
+@class TZAlbumModel, TZCollectionView;
 @interface TZPhotoPickerController : UIViewController
 
 @property (nonatomic, assign) BOOL isFirstAppear;
 @property (nonatomic, assign) NSInteger columnNumber;
 @property (nonatomic, strong) TZAlbumModel *model;
+@property (nonatomic, strong) NSOperationQueue *operationQueue;
+@property (nonatomic, strong) TZCollectionView *collectionView;
+@property (nonatomic, strong) UIView *bannerView;
 @end
 
 
