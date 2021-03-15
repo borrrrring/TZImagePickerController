@@ -42,8 +42,6 @@
 @property (strong, nonatomic) UICollectionViewFlowLayout *layout;
 @property (nonatomic, strong) UIImagePickerController *imagePickerVc;
 @property (strong, nonatomic) CLLocation *location;
-@property (nonatomic, assign) BOOL isSavingMedia;
-@property (nonatomic, assign) BOOL isFetchingMedia;
 @property (nonatomic, assign) int currentIndex;
 @end
 
@@ -528,6 +526,9 @@ static CGFloat itemMargin = 5;
             }
             if (tzImagePickerVc.didFinishPickingVideoHandle) {
                 tzImagePickerVc.didFinishPickingVideoHandle([photos firstObject], [assets firstObject]);
+            }
+            if (tzImagePickerVc.didFinishPickingPhotoWithFetchResultHandle) {
+                tzImagePickerVc.didFinishPickingPhotoWithFetchResultHandle(assets.firstObject, self.model.result, self.currentIndex);
             }
             return;
         }

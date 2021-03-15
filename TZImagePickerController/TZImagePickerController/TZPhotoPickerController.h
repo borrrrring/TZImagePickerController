@@ -17,6 +17,9 @@
 @property (nonatomic, strong) NSOperationQueue *operationQueue;
 @property (nonatomic, strong) TZCollectionView *collectionView;
 @property (nonatomic, strong) UIView *bannerView;
+
+@property (nonatomic, assign) BOOL isSavingMedia;
+@property (nonatomic, assign) BOOL isFetchingMedia;
 @end
 
 
